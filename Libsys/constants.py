@@ -1,43 +1,43 @@
-LANG_SUC_ADDED = "language successfully added"
-AUTHOR_SUC_ADDED = "author successfully added"
-USER_SUC_ADDED = "user successfully added"
-PUBLISHER_SUC_ADDED = "Punlisher successfully added"
-LANG_SUC_FIND = " Language details succesfully found"
-BOOK_DET_FOUND_SUC = "book details found successfully"
-BOOK_SUC_ADDED = "Book details added successfully"
-USER_ROLES_SUC_ADDED = "User role successfully added"
-AUTHOR_SUC_FOUND = " Authors details succesfully found"
-PUBS_SUC_FIND ="publisher details found successfully"
-PUBS_SUC_ADDED= " Publisher successfully added"
-USER_DET_UPDATE = " User details update succesfully"
-USER_SUC_FOUND = "User details successfully found"
-AUTH_DET_UPDATE = "Author details update succesfully"
-PUBLISHER_DET_UPDATE_SUCC = " Publisher details update successfully"
-BOOK_DET_NOT_FOUND = "Book does not exist. Enter valid book_id"
-USER_DET_NOT_FOUND =  "User does not exist. Enter valid user_id"
-AUTHOR_DET_NOT_FOUND = "Author does not exist. Enter valid author_id"
-USER_DEL_SUC = " User details deleted successfully"
-PUBLI_DEL_SUC = " Publisher details deleted successfully"
-BOOK_DEL_SUC = " Book details deleted successfully"
-AUTH_DEL_SUC = " Author details deleted successfully"
-LANG_NOT_FOUND = "Language does not exist. Enter valid language id"
-LANG_DIS_UPDATE =  " Language  discription updated"
-PUBLISHER_DET_NOT_FOUND = "Publisher does not exist. Enter valid publisher id"
-EBOOK_SUC_ADDED = "Ebook details successfully added"
-EBOOK_DET_ADD = " Ebook Information successfully added"
-PENDING_FOR_APPROVAL = "Pending for approval"
-BOOK_STATUS_CHANG = "Book status updated successfully"
-BOOK_DET_NOT_FOUND = "Book does not exist. Enter valid Book id"
-SUBS_ACTIVATE = "Subscription activated"
-SUBS_DEACTIVATE = "Subscription Deactivated"
-USER_SUBS_DEACTIVATE = "User has no activate subscription"
-BOOK_INFO_ADD = "Book info added"
-USER_ROLE_FIND = "User role details found"
-USER_SUBS_ERR = " User not follow the subscription condition"
+#Book status approved by the moderator. if user upload a ebook
+APPROVED = 1  
+REJECTED = 0 
+PENDING = 2  
 
 
-APPROVED = 1
-REJECTED = 0
-PENDING = 2
-FAV_BOOK = "User successfully added favorite book"
-BOOK_INFO_SUC_FIND = "Book information successfully found"
+LANGUAGE_SUCCESSFULLY_ADDED = "language details successfully added"
+LANGUAGE_DETAILS_FOUND = " Language details succesfully found"
+LANGUAGE_UPDATED_SUCCESSFULLY =  " Language  description updated"
+
+AUTHOR_SUCCESSFULLY_ADDED = "author successfully added"
+AUTHOR_SUCCESSFULLY_FOUND = " Authors details succesfully found"
+AUTHOR_DETAILS_UPDATED = "Author details update succesfully"
+AUTHOR_DETAILS_DELETED = " Author details deleted successfully"
+
+BOOK_DETAILS_FOUND = "book details found successfully"
+BOOK_SUCCESSFULLY_ADDED = "Book details added successfully" 
+BOOK_INFO_FOUND = "Book information successfully found"
+BOOK_DELETED = " Book details Removed successfully"
+BOOK_ISSUED = "Book issued to the user Successfully"
+BOOK_STATUS_CHANGE = "Book status updated successfully"
+
+PUBLISHER_ADDED= " Publisher details successfully added"
+PUBLISHER_DETAILS_FOUND ="publisher details found successfully"
+PUBLISHER_DETAILS_UPDATED = " Publisher details update successfully"
+PUBLISHER_DELETED = " Publisher details deleted successfully"
+
+USER_ADDED = "user successfully added"
+USER_DETAILS_FOUND = "User details successfully found"
+USER_DETAILS_UPDATED = " User details update succesfully"
+USER_SUBSCRIPTION_ERR = "User has no activate subscription"
+USER_DELETED = " User details deleted successfully"
+
+EBOOK_ADDED = "Ebook details successfully added"
+EBOOK_DETAILS_FOUND = " Ebook Information successfully found"
+
+SUBSCRIPTION_ACTIVATED = "User subscription succesfully activated"
+SUBSCRIPTION_DEACTIVATED = "User subscription Deactivated"
+
+FAVOURITE_BOOK_ADDED = "User successfully added favorite book"
+
+INVALID_CHOICE = "Enter valid choice either 0 or 1. you have enter other than 0 or 1"
+

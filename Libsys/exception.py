@@ -1,4 +1,4 @@
-class favoriteException(Exception):
+class favouriteException(Exception):
     pass
 
 class BookException(Exception):
@@ -22,8 +22,8 @@ class EbookException(Exception):
 class BookInfoException(Exception):
     pass
 
-class Subscriptionexception(Exception):
+class SubscriptionException(Exception):
     pass
 
-class ApprovalException(Exception):
+class BookApprovalException(Exception):
     pass

@@ -1,10 +1,4 @@
-from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponse
-from datetime import datetime, timedelta
-import json, httplib
-
-
-
-
+from django.http.response import JsonResponse
 
 def init_response(res_str=None, data=None):
     """
@@ -40,7 +34,3 @@ def send_400(data={}, res_str=''):
     if res_str:
         data['res_str'] = res_str
     return _send(data, 400)
-
-
-def send_401(data):
-    return _send(data, 401)

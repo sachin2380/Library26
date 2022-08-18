@@ -1,24 +1,6 @@
 from __future__ import unicode_literals
-from datetime import timedelta
-from distutils.command.upload import upload
-import email
-#from email.policy import default
-from operator import truediv
-from pickle import TRUE
-from pyexpat import model
-from sys import maxsize
-from turtle import up
-from unicodedata import category
-from django.contrib.postgres.fields import JSONField
-import json
-import uuid
 from django.db import models
-from django.db.models.deletion import CASCADE
-from django.forms import CharField
 from .constants import *
-
-#from Librarymanagement.Libsys.response import init_response
-
 
 # Create your models here.
 class Base(models.Model):
@@ -36,26 +18,25 @@ class Base(models.Model):
         abstract = True
 
 class languageManager(models.Manager):
-    def add_language(self, name):
-        language = self.create(**name)
-        return language
+    def add_language_details(self, language_details):
+        language_obj = self.create(**language_details)
+        return language_obj
 
-    def get_langauge(self, lang_ids):
-        language_obj = self.filter(lang_id__in=lang_ids)
+    def get_langauge_details(self, language_ids):
+        language_objs = self.filter(language_id__in=language_ids)
         language_list=[]
-        for langu in language_obj:
+        for language in language_objs:
             language_dict={}
-            language_dict['lang_id'] = langu.pk
-            language_dict['name'] = langu.name
-            language_dict['script'] = langu.script
-            language_dict['about'] = langu.about
+            language_dict['language_id'] = language.pk
+            language_dict['name'] = language.name
+            language_dict['script'] = language.script
+            language_dict['about'] = language.about
             language_list.append(language_dict)
-        return language_list    
-
+        return language_list   
 
 
 class Language(models.Model):
-    lang_id = models.AutoField(primary_key=True)
+    language_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30)
     script = models.CharField(max_length=20)
     about = models.TextField()
@@ -66,22 +47,20 @@ class Language(models.Model):
         return str(self.name)
 
 class AuthorsManager(models.Manager):
-    def add_author(self,name, picture): #, email_id, picture_url):
-        author = self.create(**name) #=name, email_id=email_id ,picture=picture_url)
-        return author
+    def add_author(self,author_data):
+        author_obj = self.create(**author_data)
+        return author_obj
 
     def get_author_details(self, author_ids):
-        #import pdb;pdb.set_trace()
-        author_obj = self.filter(author_id__in=author_ids)
-        authors=[]
-        for author in author_obj:
-            author_det={}
-            author_det['name'] = author.name
-            author_det['email_id'] = author.email_id
-            author_det['author_id'] = author.pk
-            #author_det['picture'] = author.picture.url
-            authors.append(author_det)
-        return authors          
+        author_objs = self.filter(author_id__in=author_ids)
+        author_list=[]
+        for author in author_objs:
+            author_dict={}
+            author_dict['name'] = author.name
+            author_dict['email_id'] = author.email_id
+            author_dict['author_id'] = author.pk
+            author_list.append(author_dict)
+        return author_list         
 
 
 class Author(Base):
@@ -89,52 +68,60 @@ class Author(Base):
     name = models.CharField(max_length=20)
     email_id = models.EmailField(max_length=50, unique=True)
     picture = models.ImageField(upload_to='my_picture', blank=True)
+    
     objects = AuthorsManager()
-
 
     def __unicode__(self):
         return str(self.name)
 
 class PublisherManager(models.Manager):
-    def add_publisher(self, name): #, contact_details):
-        publisher = self.create(**name) #=name, contact_details=contact_details)
-        return publisher
+   
+    def add_publisher_details(self, publisher_data):
+        publisher_obj = self.create(**publisher_data)
+        return publisher_obj
 
-    def publisher_details(self, pub_ids) :
-        publisher_obj = Publisher.objects.filter(pub_id__in=pub_ids)
-        publisher_det=[]
+    def get_publisher_details(self, publisher_ids) :
+        publisher_obj = Publisher.objects.filter(publisher_id__in=publisher_ids)
+        publisher_detail_list=[]
         for publisher in publisher_obj:
             publisher_dic={}
-            publisher_dic['pub_id'] = publisher.pk
+            publisher_dic['publisher_id'] = publisher.pk
             publisher_dic['name'] = publisher.name
             publisher_dic['contact_details'] = publisher.contact_details
 
-            publisher_det.append(publisher_dic)
-        return publisher_det
+            publisher_detail_list.append(publisher_dic)
+        return publisher_detail_list
 
 
 class Publisher(models.Model):
-    pub_id = models.AutoField(primary_key=True)
+    publisher_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     contact_details= models.CharField(max_length=100)
+
+    objects = PublisherManager()
+
     def __unicode__(self):
         return str(self.name)
 
-    objects = PublisherManager()    
 
 class BookManager(models.Manager):
-       
-    def add_book(self, name, lang_obj, publisher, author, category, book_type, extra_det, book_file):
-        book = self.create(name=name, publisher=publisher, category=category, book_type=book_type, extra_det=extra_det, book_file=book_file)
-        #book.publisher = publisher
-        book.language.add(lang_obj)
-        book.author.add(author)
-        return book
+
+    def add_book_details(self,book_data,publisher_data,lang_obj,author):
+        book_dict={}
+        book_dict['name'] = book_data.get('name')
+        book_dict['category'] = book_data.get('category')
+        book_dict['book_type'] = book_data.get('book_type')
+        book_dict['extra_det'] = book_data.get('extra_det')
+        book_dict['publisher'] = publisher_data
+        book_obj = self.create(**book_dict)
+        book_obj.language.add(lang_obj)
+        book_obj.author.add(author)
+        return book_obj
 
     def get_book_details(self,book_id):
-        book_obj = self.prefetch_related("language", 'author').select_related("publisher").filter(book_id__in=book_id)
-        book_det=[]
-        for book in book_obj:
+        book_objs = self.prefetch_related("language", 'author').select_related("publisher").filter(book_id__in=book_id)
+        book_list=[]
+        for book in book_objs:
             book_dic={}
             book_dic['book_id']=book.pk
             book_dic['name']=book.name
@@ -145,14 +132,14 @@ class BookManager(models.Manager):
             book_dic['book_type']=book.book_type
             book_dic['extra_det'] = book.extra_det
             book_dic['book_file'] = book.book_file.url
-            book_det.append(book_dic)
-        return book_det
+            book_list.append(book_dic)
+        return book_list
 
 
 class Book(Base):
     Book_type_choices = (
         ('ebook', 'ebook'),
-        ('nbook', 'nbook')
+        ('nbook', 'hardcopy of the book')
     )
     book_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
@@ -163,7 +150,6 @@ class Book(Base):
     book_type = models.CharField(max_length=50, choices=Book_type_choices)
     extra_det = models.CharField(max_length=100)
     book_file = models.FileField(upload_to='my_file', blank=True)
-    #status = models.SmallIntegerField(max_length=30, default=PENDING, choices=STATUS_CHOICE)
 
     objects = BookManager()
 
@@ -171,38 +157,33 @@ class Book(Base):
     def __unicode__(self):
         return str(self.name)
 
-
-
-
 class UserManager(models.Manager):
-    def add_user(self, data): #first_name, middle_name, last_name, mobile_no, email_id, role, favorite, approve): #, file_url):
-        user = self.create(**data) #first_name=first_name, middle_name=middle_name,\
-        #last_name=last_name, mobile_no=mobile_no, email_id=email_id, role=role, approve=approve) #, e_book=file_url)
-        #user.favorite.add(favorite)
-        return user
+    def add_user(self, user_data):
+        user_obj = self.create(**user_data)
+        return user_obj
 
     def get_user_details(self, user_ids):
-        user_obj = self.filter(user_id__in=user_ids)
+        user_objs = self.filter(user_id__in=user_ids)
         user_details=[]
-        for user in user_obj:
-            user_dic={}
-            user_dic['user_id'] = user.pk
-            user_dic['name'] = user.first_name
-            user_dic['mobile_no'] = user.mobile_no
-            user_dic['email_id'] = user.email_id
-            user_dic['role'] = user.role
-            user_details.append(user_dic)
+        for user in user_objs:
+            user_dict={}
+            user_dict['user_id'] = user.pk
+            user_dict['name'] = user.first_name
+            user_dict['mobile_no'] = user.mobile_no
+            user_dict['email_id'] = user.email_id
+            user_dict['aadhar_id'] = user.aadhar_id
+            user_dict['role'] = user.role
+            user_details.append(user_dict)
         return user_details
 
-    def add_favorite(self,book_id, user_id):
-        #import pdb;pdb.set_trace()
-        book = Book.objects.filter(book_id__in=book_id)
-        user_obj = User.objects.filter(user_id=user_id)
-        for user in user_obj:
-            user.favorite= book
-            #user.favorite.add(book)
 
-        return user    
+    def add_favourite_book(self,book_id, user_id):
+        book_objs = Book.objects.filter(book_id__in=book_id)
+        user_objs = User.objects.filter(user_id=user_id)
+        for user in user_objs:
+            user.favourite = book_objs
+            user.save()
+            return user    
             
 
 
@@ -219,11 +200,10 @@ class User(Base):
     last_name = models.CharField(max_length=20)
     mobile_no = models.CharField(max_length=12)
     email_id = models.EmailField(max_length=50)
-    role = models.CharField(max_length=30, choices=role_choice)    #ForeignKey(UserRoles, related_name='role', on_delete=models.CASCADE)
+    aadhar_id = models.CharField(max_length=16)
+    role = models.CharField(max_length=30, choices=role_choice)
     subscription = models.BooleanField(default=False)
-    favorite = models.ManyToManyField(Book, related_name='favorite', blank=True)
-    #approve = models.BooleanField('approve', default=False)
-    #e_book = models.FileField(upload_to='my_file', blank=True)
+    favourite = models.ManyToManyField(Book, related_name='favourite', blank=True)
     
 
     def __unicode__(self):
@@ -232,32 +212,26 @@ class User(Base):
 
     objects = UserManager()   
 
-class Subscription(models.Model):
-    start = models.DateTimeField(auto_now_add=True)
-    duration = timedelta(days=7)
-
-    def finish(self):
-        return self.start + self.duration
-
-
-
-
 class BookInfoManager(models.Manager):
-    def add_ebook_info(self, b_id, isLent, lentTo):
-        bookInfo = self.create(book_name=b_id, isLent=isLent, lentTo=lentTo)
-        return bookInfo
+    def issue_book(self, book_name, isLent,user_name):
+        book_info_dict={}
+        book_info_dict['book_name'] = book_name
+        book_info_dict['isLent'] = isLent
+        book_info_dict['lentTo'] = user_name
+        book_info_obj = self.create(**book_info_dict)
+        return book_info_obj
 
-    def get_book_info(self,hardCopy_id):
-        book_info_obj = BookInfo.objects.filter(hardCopy_id__in=hardCopy_id)
-        book_info=[]
-        for info in book_info_obj:
+    def get_issue_book_info(self,hardCopy_id):
+        book_info_obj = self.objects.filter(hardCopy_id__in=hardCopy_id)
+        book_info_list=[]
+        for issue_book_det in book_info_obj:
             book_info_dict={}
-            book_info_dict['hardCopy_id'] = info.hardCopy_id
-            book_info_dict['book_name'] = info.book_name.name
-            book_info_dict['isLent'] = info.isLent
-            book_info_dict['lentTo'] = info.lentTo.first_name
-            book_info.append(book_info_dict)
-        return book_info
+            book_info_dict['hardCopy_id'] = issue_book_det.hardCopy_id
+            book_info_dict['book_name'] = issue_book_det.book_name.name
+            book_info_dict['isLent'] = issue_book_det.isLent
+            book_info_dict['lentTo'] = issue_book_det.lentTo.first_name
+            book_info_list.append(book_info_dict)
+        return book_info_list
 
 class BookInfo(models.Model):
     hardCopy_id = models.AutoField(primary_key=True)
@@ -272,17 +246,15 @@ class BookInfo(models.Model):
     objects = BookInfoManager()
 
 
-
-
 class EbookManager(models.Manager):
     def add_ebook(self, ebook, location,user):
-        ebook = self.create(ebook=ebook, book_location=location, uploaded_by=user)
-        return ebook
+        ebook_obj = self.create(ebook=ebook, book_location=location, uploaded_by=user)
+        return ebook_obj
 
     def get_ebook_info(self,book_id):
-        ebook_obj = Ebook.objects.filter(book_id__in=book_id)
+        ebook_objs = Ebook.objects.filter(book_id__in=book_id)
         ebook_list=[]
-        for ebook in ebook_obj:
+        for ebook in ebook_objs:
             ebook_dict = {}
             ebook_dict['book_id'] = ebook.book_id
             ebook_dict['name'] = ebook.ebook.name
@@ -302,7 +274,7 @@ class Ebook(models.Model):
     book_id = models.AutoField(primary_key=True)
     ebook = models.ForeignKey(Book, related_name= 'book' ,on_delete=models.CASCADE)
     approval_status = models.SmallIntegerField(default=PENDING, choices=STATUS_CHOICE)
-    book_location = models.CharField(max_length=100)#ForeignKey(Book, related_name='book_location', on_delete=models.CASCADE, editable=True)
+    book_location = models.CharField(max_length=100)
     uploaded_by = models.ForeignKey(User, related_name='ebook_user', on_delete=models.CASCADE)
 
     def __unicode__(self):
