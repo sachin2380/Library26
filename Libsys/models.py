@@ -34,7 +34,6 @@ class languageManager(models.Manager):
             language_list.append(language_dict)
         return language_list   
 
-
 class Language(models.Model):
     language_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30)
@@ -61,7 +60,6 @@ class AuthorsManager(models.Manager):
             author_dict['author_id'] = author.pk
             author_list.append(author_dict)
         return author_list         
-
 
 class Author(Base):
     author_id = models.AutoField(primary_key=True)
@@ -153,7 +151,6 @@ class Book(Base):
 
     objects = BookManager()
 
-
     def __unicode__(self):
         return str(self.name)
 
@@ -184,8 +181,6 @@ class UserManager(models.Manager):
             user.favourite = book_objs
             user.save()
             return user    
-            
-
 
 class User(Base):
     role_choice = (
@@ -205,12 +200,10 @@ class User(Base):
     subscription = models.BooleanField(default=False)
     favourite = models.ManyToManyField(Book, related_name='favourite', blank=True)
     
+    objects = UserManager() 
 
     def __unicode__(self):
-        return str(self.first_name)
-
-
-    objects = UserManager()   
+        return str(self.first_name)  
 
 class BookInfoManager(models.Manager):
     def issue_book(self, book_name, isLent,user_name):
@@ -238,13 +231,11 @@ class BookInfo(models.Model):
     book_name = models.ForeignKey(Book, related_name='book_info', on_delete=models.CASCADE)
     isLent = models.BooleanField(default=False)
     lentTo = models.ForeignKey(User, related_name='lent_book', null=True)
-
+    
+    objects = BookInfoManager()
 
     def __unicode__(self):
         return str(self.pk)
-
-    objects = BookInfoManager()
-
 
 class EbookManager(models.Manager):
     def add_ebook(self, ebook, location,user):
@@ -277,10 +268,10 @@ class Ebook(models.Model):
     book_location = models.CharField(max_length=100)
     uploaded_by = models.ForeignKey(User, related_name='ebook_user', on_delete=models.CASCADE)
 
+    objects = EbookManager()
+    
     def __unicode__(self):
         return str(self.book_id)
-
-    objects = EbookManager()
 
 
 
