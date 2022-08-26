@@ -1,5 +1,5 @@
 from django.contrib import admin
-from Libsys.models import Language, Author, Book, Ebook, User, Publisher, BookInfo
+from Libsys.models import Language, Author, Book, Ebook, User, Publisher, HardBookInfo
 class languageAdmin(admin.ModelAdmin):
       list_per_page = 20
       list_display=('language_id', 'name', 'script', 'about')
@@ -7,7 +7,7 @@ class languageAdmin(admin.ModelAdmin):
 
 class BookAdmin(admin.ModelAdmin):
       list_per_page = 20
-      list_display=('book_id','name','author', 'language', 'publisher', 'book_file')
+      list_display=('book_id','name','author', 'language', 'publisher','book_type')
       raw_id_fields=['language', 'author', 'publisher']     
       search_fields=['author__name', 'language__name', 'name', 'category','publisher__pub_id'] 
       def author(self, obj):
@@ -40,7 +40,7 @@ class publisherAdmin(admin.ModelAdmin):
 
 class BookInfoAdmin(admin.ModelAdmin):
       list_per_page = 20
-      list_display=('book_name', 'hardCopy_id', 'isLent', 'lentTo')
+      list_display=('hardCopy_id', 'book_name', 'isLent', 'lentTo')
       raw_id_fields=['lentTo']
 
 
@@ -50,5 +50,5 @@ admin.site.register(Author, AuthoAdmin)
 admin.site.register(Ebook, ebookAdmin)
 admin.site.register(User ,userAdmin)
 admin.site.register(Publisher ,publisherAdmin)
-admin.site.register(BookInfo ,BookInfoAdmin)
+admin.site.register(HardBookInfo ,BookInfoAdmin)
 

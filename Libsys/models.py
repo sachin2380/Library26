@@ -34,11 +34,12 @@ class languageManager(models.Manager):
             language_list.append(language_dict)
         return language_list   
 
+
 class Language(models.Model):
     language_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=30)
-    script = models.CharField(max_length=20)
-    about = models.TextField()
+    name = models.CharField(max_length=30, null = False,blank=False)
+    script = models.CharField(max_length=20, null=False, blank=False)
+    about = models.TextField(null = False, blank=False)
 
     objects = languageManager()
 
@@ -46,8 +47,12 @@ class Language(models.Model):
         return str(self.name)
 
 class AuthorsManager(models.Manager):
-    def add_author(self,author_data):
-        author_obj = self.create(**author_data)
+    def add_author(self,author_data,picture):
+        author_dict={}
+        author_dict['name'] = author_data.get('name')
+        author_dict['email_id'] = author_data.get('email_id')
+        author_dict['picture'] = picture
+        author_obj = self.create(**author_dict)
         return author_obj
 
     def get_author_details(self, author_ids):
@@ -58,8 +63,10 @@ class AuthorsManager(models.Manager):
             author_dict['name'] = author.name
             author_dict['email_id'] = author.email_id
             author_dict['author_id'] = author.pk
+            author_dict['picture'] = author.picture.url
             author_list.append(author_dict)
         return author_list         
+
 
 class Author(Base):
     author_id = models.AutoField(primary_key=True)
@@ -79,14 +86,13 @@ class PublisherManager(models.Manager):
         return publisher_obj
 
     def get_publisher_details(self, publisher_ids) :
-        publisher_obj = Publisher.objects.filter(publisher_id__in=publisher_ids)
+        publisher_obj = self.filter(publisher_id__in=publisher_ids)
         publisher_detail_list=[]
         for publisher in publisher_obj:
             publisher_dic={}
             publisher_dic['publisher_id'] = publisher.pk
             publisher_dic['name'] = publisher.name
             publisher_dic['contact_details'] = publisher.contact_details
-
             publisher_detail_list.append(publisher_dic)
         return publisher_detail_list
 
@@ -104,7 +110,7 @@ class Publisher(models.Model):
 
 class BookManager(models.Manager):
 
-    def add_book_details(self,book_data,publisher_data,lang_obj,author):
+    def add_book_details(self,book_data,publisher_data,language_obj,author_obj):
         book_dict={}
         book_dict['name'] = book_data.get('name')
         book_dict['category'] = book_data.get('category')
@@ -112,32 +118,31 @@ class BookManager(models.Manager):
         book_dict['extra_det'] = book_data.get('extra_det')
         book_dict['publisher'] = publisher_data
         book_obj = self.create(**book_dict)
-        book_obj.language.add(lang_obj)
-        book_obj.author.add(author)
+        book_obj.language.add(language_obj)
+        book_obj.author.add(author_obj)
         return book_obj
 
     def get_book_details(self,book_id):
         book_objs = self.prefetch_related("language", 'author').select_related("publisher").filter(book_id__in=book_id)
         book_list=[]
         for book in book_objs:
-            book_dic={}
-            book_dic['book_id']=book.pk
-            book_dic['name']=book.name
-            book_dic['language'] = book.language.name
-            book_dic['author'] = book.author.name
-            book_dic['publisher'] = book.publisher.name
-            book_dic['category']=book.category
-            book_dic['book_type']=book.book_type
-            book_dic['extra_det'] = book.extra_det
-            book_dic['book_file'] = book.book_file.url
-            book_list.append(book_dic)
+            book_dict={}
+            book_dict['book_id']=book.pk
+            book_dict['name']=book.name
+            book_dict['language'] = book.language.name
+            book_dict['author'] = book.author.name
+            book_dict['publisher'] = book.publisher.name
+            book_dict['category']=book.category
+            book_dict['book_type']=book.book_type
+            book_dict['extra_det'] = book.extra_det
+            book_list.append(book_dict)
         return book_list
 
 
 class Book(Base):
     Book_type_choices = (
         ('ebook', 'ebook'),
-        ('nbook', 'hardcopy of the book')
+        ('nbook', 'hardcopy')
     )
     book_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
@@ -147,9 +152,9 @@ class Book(Base):
     category = models.CharField(max_length=20)
     book_type = models.CharField(max_length=50, choices=Book_type_choices)
     extra_det = models.CharField(max_length=100)
-    book_file = models.FileField(upload_to='my_file', blank=True)
 
     objects = BookManager()
+
 
     def __unicode__(self):
         return str(self.name)
@@ -180,8 +185,9 @@ class UserManager(models.Manager):
         for user in user_objs:
             user.favourite = book_objs
             user.save()
-            return user    
-
+        return user    
+            
+            
 class User(Base):
     role_choice = (
         ('student','student'),
@@ -200,10 +206,12 @@ class User(Base):
     subscription = models.BooleanField(default=False)
     favourite = models.ManyToManyField(Book, related_name='favourite', blank=True)
     
-    objects = UserManager() 
 
     def __unicode__(self):
-        return str(self.first_name)  
+        return str(self.first_name)
+
+
+    objects = UserManager()   
 
 class BookInfoManager(models.Manager):
     def issue_book(self, book_name, isLent,user_name):
@@ -215,7 +223,7 @@ class BookInfoManager(models.Manager):
         return book_info_obj
 
     def get_issue_book_info(self,hardCopy_id):
-        book_info_obj = self.objects.filter(hardCopy_id__in=hardCopy_id)
+        book_info_obj = self.filter(hardCopy_id__in=hardCopy_id)
         book_info_list=[]
         for issue_book_det in book_info_obj:
             book_info_dict={}
@@ -226,26 +234,35 @@ class BookInfoManager(models.Manager):
             book_info_list.append(book_info_dict)
         return book_info_list
 
-class BookInfo(models.Model):
+class HardBookInfo(models.Model):
     hardCopy_id = models.AutoField(primary_key=True)
     book_name = models.ForeignKey(Book, related_name='book_info', on_delete=models.CASCADE)
     isLent = models.BooleanField(default=False)
     lentTo = models.ForeignKey(User, related_name='lent_book', null=True)
-    
-    objects = BookInfoManager()
+
 
     def __unicode__(self):
         return str(self.pk)
 
+    objects = BookInfoManager()
+
+
 class EbookManager(models.Manager):
-    def add_ebook(self, ebook, location,user):
+    def add_ebook(self, ebook, location, user):
         ebook_obj = self.create(ebook=ebook, book_location=location, uploaded_by=user)
         return ebook_obj
 
     def get_ebook_info(self,book_id):
-        ebook_objs = Ebook.objects.filter(book_id__in=book_id)
+        ebook_objs = self.filter(book_id__in=book_id)
+        ebook_id_list =[]
+        for status in ebook_objs:
+            approval_status =status.approval_status
+            if (approval_status==1):
+                ebook_id = status.book_id
+                ebook_id_list.append(ebook_id)
+        ebook_obj = self.filter(book_id__in=ebook_id_list)
         ebook_list=[]
-        for ebook in ebook_objs:
+        for ebook in ebook_obj:
             ebook_dict = {}
             ebook_dict['book_id'] = ebook.book_id
             ebook_dict['name'] = ebook.ebook.name
@@ -253,7 +270,8 @@ class EbookManager(models.Manager):
             ebook_dict['book_location'] = ebook.book_location
             ebook_dict['uploaded_by'] = ebook.uploaded_by.first_name
             ebook_list.append(ebook_dict)
-        return  ebook_list   
+        return  ebook_list        
+             
 
 
 class Ebook(models.Model):
@@ -268,14 +286,7 @@ class Ebook(models.Model):
     book_location = models.CharField(max_length=100)
     uploaded_by = models.ForeignKey(User, related_name='ebook_user', on_delete=models.CASCADE)
 
-    objects = EbookManager()
-    
     def __unicode__(self):
         return str(self.book_id)
 
-
-
-
-    
-
-    
+    objects = EbookManager()
