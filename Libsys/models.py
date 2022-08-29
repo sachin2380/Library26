@@ -33,7 +33,14 @@ class languageManager(models.Manager):
             language_dict['about'] = language.about
             language_list.append(language_dict)
         return language_list   
-
+    def update_langauge_details(self,params):
+            language_obj=Language.objects.get(language_id__in=params.get('language_id'))
+            language_obj.name = params.get('name')
+            language_obj.about = params.get('about')
+            language_obj.script = params.get('script')
+            language_obj.save(update_fields=['about','name', 'script'])
+            
+            return language_obj.language_dict()
 
 class Language(models.Model):
     language_id = models.AutoField(primary_key=True)
@@ -45,6 +52,14 @@ class Language(models.Model):
 
     def __unicode__(self):
         return str(self.name)
+
+    def language_dict(self):
+        return{
+            "language_id":self.language_id,
+            "name":self.name,
+            "script":self.script,
+            "about":self.about
+        }    
 
 class AuthorsManager(models.Manager):
     def add_author(self,author_data,picture):
@@ -65,7 +80,14 @@ class AuthorsManager(models.Manager):
             author_dict['author_id'] = author.pk
             author_dict['picture'] = author.picture.url
             author_list.append(author_dict)
-        return author_list         
+        return author_list  
+
+    def update_author_details(self,author_data):
+        author_obj = Author.objects.get(author_id__in=author_data.get('author_id'))
+        author_obj.email_id = author_data.get('email_id')
+        author_obj.name = author_data.get('name')  
+        author_obj.save(update_fields=['email_id', 'name'])
+        return author_obj.author_dict()       
 
 
 class Author(Base):
@@ -78,6 +100,13 @@ class Author(Base):
 
     def __unicode__(self):
         return str(self.name)
+
+    def author_dict(self):
+        return{
+            "author_id":self.author_id,
+            "name":self.name,
+            "email_id":self.email_id,
+        }        
 
 class PublisherManager(models.Manager):
    
@@ -96,6 +125,12 @@ class PublisherManager(models.Manager):
             publisher_detail_list.append(publisher_dic)
         return publisher_detail_list
 
+    def update_publisher_details(self,publisher_data):
+        publisher_obj = Publisher.objects.get(publisher_id__in=publisher_data.get('publisher_id'))
+        publisher_obj.name = publisher_data.get("name")
+        publisher_obj.contact_details = publisher_data.get("contact_details")
+        publisher_obj.save(update_fields=['contact_details', 'name'])
+        return publisher_obj.publisher_dict()
 
 class Publisher(models.Model):
     publisher_id = models.AutoField(primary_key=True)
@@ -107,7 +142,12 @@ class Publisher(models.Model):
     def __unicode__(self):
         return str(self.name)
 
-
+    def publisher_dict(self):
+        return{
+            "publisher_id":self.publisher_id,
+            "name":self.name,
+            "contact_details":self.contact_details,
+        }        
 class BookManager(models.Manager):
 
     def add_book_details(self,book_data,publisher_data,language_obj,author_obj):
@@ -177,7 +217,24 @@ class UserManager(models.Manager):
             user_dict['role'] = user.role
             user_details.append(user_dict)
         return user_details
+ 
+    def update_user_details(self, user_data):
+        user_objs = User.objects.filter(user_id__in = user_data.get('user_id'))
+        for user_obj in user_objs:
+                user_obj.mobile_no = user_data.get('mobile_no')
+                user_obj.email_id = user_data.get('email_id')
+                user_obj.role = user_data.get('role')
+        user_obj.save(update_fields=['email_id', 'mobile_no', 'role'])
+        return user_obj.user_dict()
 
+    def update_subscription(self,user_id, choice ):
+        user_subs = User.objects.get(user_id=user_id)
+        if int(choice)==1:
+            user_subs.subscription = True
+        else:
+            user_subs.subscription = False    
+        user_subs.save(update_fields=['subscription'])
+        return user_subs.user_dict()
 
     def add_favourite_book(self,book_id, user_id):
         book_objs = Book.objects.filter(book_id__in=book_id)
@@ -187,7 +244,7 @@ class UserManager(models.Manager):
             user.save()
         return user    
             
-            
+
 class User(Base):
     role_choice = (
         ('student','student'),
@@ -206,12 +263,22 @@ class User(Base):
     subscription = models.BooleanField(default=False)
     favourite = models.ManyToManyField(Book, related_name='favourite', blank=True)
     
+    objects = UserManager() 
 
     def __unicode__(self):
         return str(self.first_name)
 
 
-    objects = UserManager()   
+    def user_dict(self):
+        return {
+            "user_id":self.pk,
+            "name":self.first_name + " " + self.middle_name + " " + self.last_name,
+            "email_id":self.email_id,
+            "role":self.role,
+            "adhar_id":self.aadhar_id,
+            "mobile_no":self.mobile_no,
+            "subscription":self.subscription
+        }  
 
 class BookInfoManager(models.Manager):
     def issue_book(self, book_name, isLent,user_name):
@@ -240,11 +307,12 @@ class HardBookInfo(models.Model):
     isLent = models.BooleanField(default=False)
     lentTo = models.ForeignKey(User, related_name='lent_book', null=True)
 
+    objects = BookInfoManager()
 
     def __unicode__(self):
         return str(self.pk)
 
-    objects = BookInfoManager()
+    
 
 
 class EbookManager(models.Manager):
@@ -286,7 +354,10 @@ class Ebook(models.Model):
     book_location = models.CharField(max_length=100)
     uploaded_by = models.ForeignKey(User, related_name='ebook_user', on_delete=models.CASCADE)
 
+
+    objects = EbookManager()
+
     def __unicode__(self):
         return str(self.book_id)
 
-    objects = EbookManager()
+    

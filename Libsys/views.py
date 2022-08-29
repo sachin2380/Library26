@@ -99,15 +99,9 @@ class LanguageView(View):
             self.validate_language_params_keys(params)
             self.validate_lang_value_params(params)
             language_id = params.get('language_id').strip().split(',')
-            about = params.get('about')
-            name = params.get('name')
-            script = params.get('script')
             self.validate_language_ids(language_id)
-            language_obj=Language.objects.get(language_id__in=language_id)
-            language_obj.name = name
-            language_obj.about = about
-            language_obj.script = script
-            language_obj.save(update_fields=['about','name', 'script'])
+            language_details = Language.objects.update_langauge_details(params)
+            self.response['res_data'] = language_details
             self.response['res_str'] = LANGUAGE_UPDATED_SUCCESSFULLY 
             return send_200(self.response)
         except LanguageException as ex:
@@ -185,14 +179,10 @@ class AuthorView(View):
         try:
             self.validate_author_params(params)
             self.validate_author_params_value(params)
-            author_id = params.get('author_id')
-            email_id = params.get('email_id')
-            name = params.get('name')
+            author_id = params.get('author_id').strip().split(',')
             self.validate_author_ids(author_id)
-            author_obj = Author.objects.get(author_id__in=author_id)
-            author_obj.email_id = email_id
-            author_obj.name = name  
-            author_obj.save(update_fields=['email_id', 'name'])
+            author_detail = Author.objects.update_author_details(params)
+            self.response['res_data'] = author_detail
             self.response['res_str'] = AUTHOR_DETAILS_UPDATED
             return send_200(self.response)
         except  AuthorException as ex:
@@ -331,7 +321,7 @@ class UserView(View):
         user_objs = User.objects.filter(user_id__in = user_id)
         if not user_objs:
             raise UserException("User does not exist. check User Id")
-
+        # return user_objs
     def validate_existing_user(self,aadhar_id):
         user_obj = User.objects.filter(aadhar_id=aadhar_id)
         if user_obj:
@@ -399,16 +389,10 @@ class UserView(View):
             self.validate_user_params(params)
             self.validate_user_params_value(params)
             user_id = params.get('user_id')
-            role = params.get('role')
-            mobile_no = params.get('mobile_no')
-            email_id = params.get('email_id')
             self.validate_user_ids(user_id)
-            user_obj = User.objects.get(user_id__in=user_id)
-            user_obj.mobile_no = mobile_no
-            user_obj.email_id = email_id
-            user_obj.role = role
-            user_obj.save(update_fields=['email_id', 'mobile_no', 'role'])
+            user =  User.objects.update_user_details(params)
             self.response['res_str'] = USER_DETAILS_UPDATED
+            self.response['res_data'] = user
             return send_200(self.response)
         except UserException as ex:
             self.response['res_str'] = str(ex)
@@ -504,12 +488,8 @@ class PublisherView(View):
             self.validate_publisher_params_value(params)
             publisher_id = params.get('publisher_id').strip().split(',')
             self.validate_publisher_ids(publisher_id)
-            publisher_obj = Publisher.objects.get(publisher_id__in=publisher_id)
-            contact_details = params.get('contact_details')
-            publisher_obj.contact_details = contact_details
-            name = params.get("name")
-            publisher_obj.name = name
-            publisher_obj.save(update_fields=['contact_details', 'name'])
+            publisher_details = Publisher.objects.update_publisher_details(params)
+            self.response['res_data'] = publisher_details
             self.response['res_str'] = PUBLISHER_DETAILS_UPDATED
             return send_200(self.response)
         except PublisherException as ex:
@@ -922,8 +902,9 @@ class Subscription(View):
 
     def validate_subscription_params(self,params):
         for key in ['user_id', 'choice']:
-            if not key in params.keys():
+            if key not in params.keys():
                 raise SubscriptionException("All keys are mandatory")
+
     def validate_subscription_key_params(self,params):
         for key, value in params.items():
             if len(value)==0:
@@ -937,15 +918,13 @@ class Subscription(View):
             user_id= params.get('user_id')
             choice = params.get('choice')
             self.validate_user(user_id)
-            user_subs = User.objects.get(user_id=user_id)
             self.validate_subscription_choice(choice)
+            user_det = User.objects.update_subscription(user_id, choice)
             if int(choice)==1:
-                user_subs.subscription = True
                 self.response['res_str'] = SUBSCRIPTION_ACTIVATED
             else:
-                user_subs.subscription = False
                 self.response['res_str'] = SUBSCRIPTION_DEACTIVATED  
-            user_subs.save(update_fields=['subscription'])
+            self.response['res_data'] = user_det
             return send_200(self.response)
         except SubscriptionException as ex:
             self.response['res_str'] = str(ex)
